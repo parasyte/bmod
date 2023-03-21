@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/bakkesmodorg/BakkesModSDK.git
+	branch = master
+	commit = 2c2686b195c94a69a617b0c130e2e63045b61e1b
+	parent = a67b76376faeab5f6ca75eb1ec17f228deedb820
+	method = merge
+	cmdver = 0.4.5
