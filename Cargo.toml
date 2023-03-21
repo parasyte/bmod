@@ -1,0 +1,11 @@
+[package]
+name = "bmod"
+description = "BakkesModSDK for Rust"
+version = "0.1.0"
+authors = ["Jay Oster <jay@kodewerx.org>"]
+edition = "2021"
+keywords = ["game", "rocket-league"]
+categories = ["API bindings", "Game development"]
+license = "MIT"
+
+[dependencies]
