@@ -34,7 +34,7 @@ pub fn compile(crate_name: &str, crate_version: &str, class_name: &str, flags: P
             }
 
             unsafe extern "C++" {
-                fn console_log(msg: String);
+                fn console_log(msg: &str);
             }
         }
     };
@@ -55,7 +55,7 @@ public:
     virtual void onUnload();
 }};
 
-void console_log(rust::String msg);
+void console_log(rust::Str msg);
 "#
     );
     // Write C++ header to OUT_DIR.
@@ -77,7 +77,7 @@ void {class_name}::onUnload() {{
     on_unload();
 }}
 
-void console_log(rust::String msg) {{
+void console_log(rust::Str msg) {{
     singleton->cvarManager->log(std::string(msg));
 }}
 "#,
