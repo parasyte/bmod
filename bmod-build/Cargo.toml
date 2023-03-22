@@ -1,19 +1,18 @@
 [package]
-name = "bmod"
-description = "BakkesModSDK for Rust"
+name = "bmod-build"
+description = "BakkesModSDK for Rust build-scripts"
 version = "0.1.0"
 authors = ["Jay Oster <jay@kodewerx.org>"]
 edition = "2021"
 keywords = ["game", "rocket-league", "bakkesmod", "plugin"]
 categories = ["API bindings", "Game development"]
 license = "MIT"
-
-[workspace]
-members = [
-    "bmod-build",
-    "examples/test-plugin",
+include = [
+    "BakkesModSDK",
 ]
 
 [dependencies]
-bitflags = "2"
-cxx = "1"
+bmod = { version = "0.1", path = ".." }
+cc = "1"
+cxx-gen = "0.7"
+quote = "1"
