@@ -1,0 +1,17 @@
+#include "{header_path}"
+#include "bakkesmod/wrappers/includes.h"
+#include "{gen_h_path}"
+
+BAKKESMOD_PLUGIN({class_name}, "{crate_name}", "{crate_version}", {flags})
+
+void {class_name}::onLoad() {{
+    on_load();
+}}
+
+void {class_name}::onUnload() {{
+    on_unload();
+}}
+
+void console_log(rust::Str msg) {{
+    singleton->cvarManager->log(std::string(msg));
+}}

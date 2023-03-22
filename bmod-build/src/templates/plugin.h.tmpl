@@ -1,0 +1,11 @@
+#pragma once
+#include "{cxx_header_path}"
+#include "bakkesmod/plugin/bakkesmodplugin.h"
+
+class {class_name} : public BakkesMod::Plugin::BakkesModPlugin {{
+public:
+    virtual void onLoad();
+    virtual void onUnload();
+}};
+
+void console_log(rust::Str msg);

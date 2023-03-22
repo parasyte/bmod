@@ -5,6 +5,7 @@
 use bmod::PluginType;
 use cxx_gen::{Include, IncludeKind};
 use quote::quote;
+use std::path::PathBuf;
 
 pub fn compile(crate_name: &str, crate_version: &str, class_name: &str, flags: PluginType) {
     let crate_name = crate_name.trim();
@@ -16,15 +17,21 @@ pub fn compile(crate_name: &str, crate_version: &str, class_name: &str, flags: P
     assert_ne!(class_name, "");
 
     let out_dir = std::env::var("OUT_DIR").unwrap();
-    let bridge_path = format!("{out_dir}/plugin.rs");
-    let header_path = format!("{out_dir}/plugin.h");
-    let cpp_path = format!("{out_dir}/plugin.cc");
-    let gen_h_path = format!("{out_dir}/gen.h");
-    let gen_cpp_path = format!("{out_dir}/gen.cc");
-    let cxx_header_path = format!("{out_dir}/rust/cxx.h");
+    let bridge_path = PathBuf::from_iter([&out_dir, "plugin.rs"]);
+    let header_path = PathBuf::from_iter([&out_dir, "plugin.h"]);
+    let cpp_path = PathBuf::from_iter([&out_dir, "plugin.cc"]);
+    let gen_h_path = PathBuf::from_iter([&out_dir, "gen.h"]);
+    let gen_cpp_path = PathBuf::from_iter([&out_dir, "gen.cc"]);
+    let cxx_header_path = PathBuf::from_iter([&out_dir, "rust", "cxx.h"]);
+    let bakkesmod_inc_path =
+        PathBuf::from_iter([env!("CARGO_MANIFEST_DIR"), "BakkesModSDK", "include"]);
+    let bakkesmod_lib_path =
+        PathBuf::from_iter([env!("CARGO_MANIFEST_DIR"), "BakkesModSDK", "lib"]);
 
-    std::fs::create_dir_all(format!("{out_dir}/rust")).unwrap();
+    // Create the OUT_DIR directory structure.
+    std::fs::create_dir_all(cxx_header_path.parent().unwrap()).unwrap();
 
+    // Write Rust boilerplate to OUT_DIR.
     let bridge = quote! {
         #[cxx::bridge]
         mod ffi {
@@ -38,57 +45,32 @@ pub fn compile(crate_name: &str, crate_version: &str, class_name: &str, flags: P
             }
         }
     };
-
-    // Write Rust boilerplate to OUT_DIR.
     std::fs::write(bridge_path, bridge.to_string())
         .expect("Unable to write cxx::bridge boilerplate");
 
-    let header = format!(
-        r#"
-#pragma once
-#include "{cxx_header_path}"
-#include "bakkesmod/plugin/bakkesmodplugin.h"
-
-class {class_name} : public BakkesMod::Plugin::BakkesModPlugin {{
-public:
-    virtual void onLoad();
-    virtual void onUnload();
-}};
-
-void console_log(rust::Str msg);
-"#
-    );
     // Write C++ header to OUT_DIR.
+    let header = format!(
+        include_str!("./templates/plugin.h.tmpl"),
+        cxx_header_path = cxx_header_path.display(),
+        class_name = class_name,
+    );
     std::fs::write(&header_path, header).expect("Unable to write C++ header");
 
+    // Write C++ boilerplate to OUT_DIR.
     let cpp = format!(
-        r#"
-#include "{header_path}"
-#include "bakkesmod/wrappers/includes.h"
-#include "{gen_h_path}"
-
-BAKKESMOD_PLUGIN({class_name}, "{crate_name}", "{crate_version}", {flags})
-
-void {class_name}::onLoad() {{
-    on_load();
-}}
-
-void {class_name}::onUnload() {{
-    on_unload();
-}}
-
-void console_log(rust::Str msg) {{
-    singleton->cvarManager->log(std::string(msg));
-}}
-"#,
+        include_str!("./templates/plugin.cc.tmpl"),
+        header_path = header_path.display(),
+        gen_h_path = gen_h_path.display(),
+        class_name = class_name,
+        crate_name = crate_name,
+        crate_version = crate_version,
         flags = flags.to_string(),
     );
-    // Write C++ boilerplate to OUT_DIR.
     std::fs::write(&cpp_path, cpp).expect("Unable to write C++ boilerplate");
 
     let mut options = cxx_gen::Opt::default();
     options.include.push(Include {
-        path: header_path,
+        path: header_path.display().to_string(),
         kind: IncludeKind::Quoted,
     });
     let gen = cxx_gen::generate_header_and_cc(bridge, &options).unwrap();
@@ -102,12 +84,20 @@ void console_log(rust::Str msg) {{
     // Write cxx header to OUT_DIR.
     std::fs::write(&cxx_header_path, cxx_gen::HEADER).unwrap();
 
+    // Build the C++ library.
     cc::Build::new()
         .cpp(true)
         .file(cpp_path)
         .file(gen_cpp_path)
-        // TODO: How to get the SDK path for crates outside of the workspace?
-        .include("../../BakkesModSDK/include")
+        .include(bakkesmod_inc_path)
         .include(out_dir)
         .compile(crate_name);
+
+    // Only rebuild when the build script changes.
+    println!("cargo:rerun-if-changed=build.rs");
+
+    // Set link args.
+    println!("cargo:rustc-link-search={}", bakkesmod_lib_path.display());
+    println!("cargo:rustc-link-lib=pluginsdk");
+    println!("cargo:rustc-link-arg=/WHOLEARCHIVE:{crate_name}.lib");
 }
