@@ -10,9 +10,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 bmod = { path = "../.." }
 cxx = "1"
-# cpp = "0.5"
 
 [build-dependencies]
 bmod = { path = "../.." }
 bmod-build = { path = "../../bmod-build" }
-# cpp_build = "0.5"
