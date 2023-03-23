@@ -12,5 +12,4 @@ bmod = { path = "../.." }
 cxx = "1"
 
 [build-dependencies]
-bmod = { path = "../.." }
 bmod-build = { path = "../../bmod-build" }

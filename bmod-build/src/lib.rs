@@ -2,6 +2,7 @@
 //!
 //! This crate builds the C++ boilerplate part of the plugin.
 
+pub use bmod;
 use bmod::PluginType;
 use cxx_gen::{Include, IncludeKind};
 use quote::quote;

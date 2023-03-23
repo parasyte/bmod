@@ -3,6 +3,6 @@ fn main() {
         env!("CARGO_PKG_NAME"),
         env!("CARGO_PKG_VERSION"),
         "TestPlugin",
-        bmod::PluginType::ALL,
+        bmod_build::bmod::PluginType::ALL,
     );
 }
