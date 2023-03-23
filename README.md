@@ -36,6 +36,26 @@ The bindings are created with the venerable [`cxx`](https://docs.rs/cxx) crate a
 
 `on_load` and `on_unload` accept no arguments and return no values. All SDK interactions are done through the static `singleton` reference. This is also true for macros like `bmod::console_log!()`. The singleton reference is never exposed directly to Rust, but is implicitly referenced through exported C++ functions.
 
+
+## Testing
+
+To run the tests, make sure the `bakkesmod/dll/` directory is in your path:
+
+```
+PATH="$APPDATA/bakkesmod/bakkesmod/dll:$PATH" cargo test --workspace
+```
+
+If the path environment is configured incorrectly, you will get an error that looks like this:
+
+```
+error: test failed, to rerun pass `-p test-plugin --lib`
+
+Caused by:
+  process didn't exit successfully: `C:\Users\jay\projects\bmod\target\debug\deps\test_plugin-0768ef7d8061cc2a.exe` (exit code: 0xc0000135, STATUS_DLL_NOT_FOUND)
+C:/Users/jay/.cargo/bin/cargo.exe: error while loading shared libraries: ?: cannot open shared object file: No such file or directory
+```
+
+
 ## TODO
 
 - Thread safety: Create a Rust-side thread-local representation of the singleton with borrow guarantees and ensure it is `!Send`.
