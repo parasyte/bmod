@@ -1,0 +1,2 @@
+[alias]
+install-plugin = ["run", "--release", "--package", "install-plugin", "--"]

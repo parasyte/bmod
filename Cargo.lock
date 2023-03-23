@@ -84,6 +84,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "error-iter"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8070547d90d1b98debb6626421d742c897942bbb78f047694a5eb769495eccd6"
+
+[[package]]
+name = "install-plugin"
+version = "0.1.0"
+dependencies = [
+ "error-iter",
+ "onlyargs",
+ "thiserror",
+]
+
+[[package]]
 name = "link-cplusplus"
 version = "1.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -91,6 +106,11 @@ checksum = "ecd207c9c713c34f95a097a5b029ac2ce6010530c7b49d7fea24d977dede04f5"
 dependencies = [
  "cc",
 ]
+
+[[package]]
+name = "onlyargs"
+version = "0.1.0"
+source = "git+https://github.com/parasyte/onlyargs.git?rev=7d99788b71d93a83e066404710e2c815f84dbd0a#7d99788b71d93a83e066404710e2c815f84dbd0a"
 
 [[package]]
 name = "proc-macro2"
@@ -137,6 +157,26 @@ dependencies = [
  "bmod",
  "bmod-build",
  "cxx",
+]
+
+[[package]]
+name = "thiserror"
+version = "1.0.40"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "978c9a314bd8dc99be594bc3c175faaa9794be04a5a5e153caba6915336cebac"
+dependencies = [
+ "thiserror-impl",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "1.0.40"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f9456a42c5b0d803c8cd86e73dd7cc9edd429499f37a3550d286d5e86720569f"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

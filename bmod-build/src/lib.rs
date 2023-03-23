@@ -7,6 +7,14 @@ use cxx_gen::{Include, IncludeKind};
 use quote::quote;
 use std::path::PathBuf;
 
+/// Compile the SDK into a plugin facade with bidirectional FFI support.
+///
+/// # Arguments
+///
+/// - `crate_name`: Defines the plugin name. This and `plugin_version` are visible to bakkesmod.
+/// - `crate_version`: Defines the plugin version.
+/// - `class_name`: Name of the C++ class in the boilerplate. This is also visible to bakkesmod.
+/// - `flags`: The [plugin type](https://wiki.bakkesplugins.com/code_snippets/plugin_types/).
 pub fn compile(crate_name: &str, crate_version: &str, class_name: &str, flags: PluginType) {
     let crate_name = crate_name.trim();
     let crate_version = crate_version.trim();
