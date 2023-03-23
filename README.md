@@ -15,10 +15,10 @@ You are highly encouraged to use the C++ SDK today.
 Still interested? The TL;DR quick-start is:
 
 ```bash
-$ cargo install-plugin --release -p test-plugin
+$ cargo install-plugin --release --package test-plugin
 ```
 
-This will build (in release mode) the [`test-plugin`](./examples/test-plugin/src/main.rs) crate and attempt to install it to the default plugin directory. It also adds itself to
+This will build (in release mode) the [`test-plugin`](./examples/test-plugin/src/main.rs) crate and attempt to install it to the default plugin directory. It also arranges for bakkesmod to load and enable the plugin, which will take effect when Rocket League is restarted.
 
 The test plugin only prints a short message to the F6 console when loaded, and another message when unloaded.
 
@@ -65,3 +65,9 @@ C:/Users/jay/.cargo/bin/cargo.exe: error while loading shared libraries: ?: cann
   - Or at least the most useful ones. The deprecated types and methods are not necessary.
 - `imgui-sys` bindings and a safe interface for it.
   - The safe `imgui` crate cannot be used because it doesn't allow setting arbitrary context pointers (that would be unsafe!)
+- RCon WebSockets API
+  - The bakkesmod Remote Console is available at `ws://localhost:9002`.
+  - It allows executing commands like unloading and loading plugins while the game is running.
+  - This is how the plugin installer links on https://bakkesplugins.com/ work.
+  - The `rcon_password` needs to be read from `$APPDATA/bakkesmod/bakkesmod/cfg/config.cfg` for protocol authentication.
+  - This is the preferred way for the `install-plugin` tool to install the plugin. Fallback to the `newfeatures.apply` file if the WebSocket connection times out after a few seconds.
