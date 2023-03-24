@@ -1,4 +1,9 @@
-use crate::cli::Args;
+//! Plugin installer tool for [`bmod`](https://github.com/parasyte/bmod).
+//!
+//! This is usually executed as a Cargo alias defined in the plugin repo, but it can also be
+//! installed with `cargo install`.
+
+pub use crate::cli::Args;
 use error_iter::ErrorIter as _;
 use onlyargs::OnlyArgs;
 use std::{
@@ -12,22 +17,30 @@ use thiserror::Error;
 
 mod cli;
 
+/// All the ways in which installing a plugin can fail.
 #[derive(Debug, Error)]
-enum Error {
+pub enum Error {
+    /// Argument parsing errors.
     #[error("Argument parsing error")]
     Cli(#[from] onlyargs::CliError),
 
+    /// File system I/O errors.
     #[error("I/O error")]
     Io(#[from] std::io::Error),
 
+    /// Cargo build errors.
     #[error("Cargo build failed with status code: {0:?}")]
     Build(Option<i32>),
 
+    /// A required environment variable is missing.
     #[error("Missing APPDATA env var")]
     MissingEnv(#[from] VarError),
 }
 
-fn run() -> Result<(), Error> {
+/// The main installer.
+///
+/// Use this in your executable if you want to customize how errors are reported.
+pub fn install() -> Result<(), Error> {
     let appdata = std::env::var("APPDATA")?;
     let args: Args = onlyargs::parse()?;
 
@@ -44,7 +57,7 @@ fn run() -> Result<(), Error> {
     if args.release {
         cmd.arg("--release");
     };
-    let status = cmd.args(["--package", &args.pkg_name]).spawn()?.wait()?;
+    let status = cmd.args(["--package", &args.package]).spawn()?.wait()?;
 
     if !status.success() {
         return Err(Error::Build(status.code()));
@@ -52,7 +65,7 @@ fn run() -> Result<(), Error> {
 
     // Copy the DLL to the plugin directory.
     let release = if args.release { "release" } else { "debug" };
-    let plugin_name = args.pkg_name.replace('-', "_");
+    let plugin_name = args.package.replace('-', "_");
     let dll = format!("{}.dll", plugin_name);
     let src = PathBuf::from_iter(["target", release, &dll]);
     let dest = PathBuf::from_iter([&appdata, "bakkesmod", "bakkesmod", "plugins", &dll]);
@@ -72,8 +85,12 @@ fn run() -> Result<(), Error> {
     Ok(())
 }
 
-fn main() -> ExitCode {
-    match run() {
+/// A wrapper for [`run`].
+///
+/// Intended to be used as a simple `main` function. This prints the CLI help text and the chain of
+/// error messages. If you wish to customize error handling, use [`run`] instead.
+pub fn run() -> ExitCode {
+    match install() {
         Ok(_) => ExitCode::SUCCESS,
         Err(err) => {
             if matches!(err, Error::Cli(_)) {

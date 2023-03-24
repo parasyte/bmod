@@ -1,2 +1,2 @@
 [alias]
-install-plugin = ["run", "--release", "--package", "install-plugin", "--"]
+bmod-install = ["run", "--release", "--package", "bmod-install", "--"]

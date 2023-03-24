@@ -15,7 +15,7 @@ You are highly encouraged to use the C++ SDK today.
 Still interested? The TL;DR quick-start is:
 
 ```bash
-$ cargo install-plugin --release --package test-plugin
+$ cargo bmod-install --release --package test-plugin
 ```
 
 This will build (in release mode) the [`test-plugin`](./examples/test-plugin/src/main.rs) crate and attempt to install it to the default plugin directory. It also arranges for bakkesmod to load and enable the plugin, which will take effect when Rocket League is restarted.
@@ -42,7 +42,7 @@ The bindings are created with the venerable [`cxx`](https://docs.rs/cxx) crate a
 To run the tests, make sure the `bakkesmod/dll/` directory is in your path:
 
 ```
-PATH="$APPDATA/bakkesmod/bakkesmod/dll:$PATH" cargo test --workspace
+$ PATH="$APPDATA/bakkesmod/bakkesmod/dll:$PATH" cargo test --workspace
 ```
 
 If the path environment is configured incorrectly, you will get an error that looks like this:
@@ -70,4 +70,4 @@ C:/Users/jay/.cargo/bin/cargo.exe: error while loading shared libraries: ?: cann
   - It allows executing commands like unloading and loading plugins while the game is running.
   - This is how the plugin installer links on https://bakkesplugins.com/ work.
   - The `rcon_password` needs to be read from `$APPDATA/bakkesmod/bakkesmod/cfg/config.cfg` for protocol authentication.
-  - This is the preferred way for the `install-plugin` tool to install the plugin. Fallback to the `newfeatures.apply` file if the WebSocket connection times out after a few seconds.
+  - This is the preferred way for the `bmod-install` tool to install the plugin. Fallback to the `newfeatures.apply` file if the WebSocket connection times out after a few seconds.

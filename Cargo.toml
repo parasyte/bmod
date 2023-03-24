@@ -11,8 +11,8 @@ license = "MIT"
 [workspace]
 members = [
     "bmod-build",
+    "bmod-install",
     "examples/test-plugin",
-    "install-plugin",
 ]
 
 [dependencies]

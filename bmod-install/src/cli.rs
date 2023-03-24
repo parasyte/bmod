@@ -1,11 +1,19 @@
 use onlyargs::{CliError, OnlyArgs};
 use std::ffi::OsString;
 
+/// CLI arguments.
 #[derive(Debug)]
 pub struct Args {
-    pub pkg_name: String,
+    /// The plugin's crate name. Must be relative to the CWD.
+    pub package: String,
+
+    /// Build release profile (defaults to debug).
     pub release: bool,
+
+    /// Show the help message and exit.
     pub help: bool,
+
+    /// Show the application version and exit.
     pub version: bool,
 }
 
@@ -19,19 +27,20 @@ impl OnlyArgs for Args {
             env!("CARGO_PKG_DESCRIPTION"),
             "\n",
             "\nUsage:\n  ",
-            env!("CARGO_BIN_NAME"),
+            env!("CARGO_PKG_NAME"),
+            ".exe",
             " [flags] [options]\n",
             "\nFlags:\n",
             "  -p --package <name>  The plugin's crate name. Must be relative to the CWD.\n",
             "\nOptions:\n",
             "  -r --release  Build release profile (defaults to debug).\n",
-            "  -h --help     Show this help message.\n",
-            "  --version     Show the application version.\n",
+            "  -h --help     Show this help message and exit.\n",
+            "  --version     Show the application version and exit.\n",
         )
     }
 
     fn parse(args: Vec<OsString>) -> Result<Args, CliError> {
-        let mut pkg_name = None;
+        let mut package = None;
         let mut release = false;
         let mut help = false;
         let mut version = false;
@@ -50,7 +59,7 @@ impl OnlyArgs for Args {
                         .into_string()
                         .map_err(|err| CliError::ParseStrError("release".to_string(), err))?;
 
-                    pkg_name = Some(name);
+                    package = Some(name);
                 }
                 Some("--release") | Some("-r") => {
                     release = true;
@@ -65,11 +74,14 @@ impl OnlyArgs for Args {
             }
         }
 
-        // Required arguments.
-        let pkg_name = pkg_name.ok_or_else(|| CliError::MissingRequired("package".to_string()))?;
+        // Required arguments are set to defaults if `--help` or `--version` are present.
+        let package = (help || version)
+            .then(String::new)
+            .or(package)
+            .ok_or_else(|| CliError::MissingRequired("package".to_string()))?;
 
         Ok(Self {
-            pkg_name,
+            package,
             release,
             help,
             version,

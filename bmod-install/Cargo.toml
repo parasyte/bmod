@@ -1,5 +1,5 @@
 [package]
-name = "install-plugin"
+name = "bmod-install"
 description = "Plugin installer for bakkesmod"
 version = "0.1.0"
 edition = "2021"
