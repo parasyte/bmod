@@ -38,18 +38,18 @@ impl RCon {
     }
 
     /// Send `plugin load` command.
-    pub fn plugin_load(&mut self, plugin: &str) -> Result<(), Error> {
-        self.send(format!("plugin load {plugin};"))
+    pub fn plugin_load(&mut self, name: &str) -> Result<(), Error> {
+        self.send(format!("plugin load {name};"))
     }
 
     /// Send `plugin unload` command.
-    pub fn plugin_unload(&mut self, plugin: &str) -> Result<(), Error> {
-        self.send(format!("plugin unload {plugin};"))
+    pub fn plugin_unload(&mut self, name: &str) -> Result<(), Error> {
+        self.send(format!("plugin unload {name};"))
     }
 
     fn send<S: Into<String>>(&mut self, cmd: S) -> Result<(), Error> {
         let cmd = cmd.into();
-        debug!("Sending command: {cmd}");
+        debug!("Sending command: `{cmd}`.");
         self.client.send(cmd)?;
 
         Ok(())
