@@ -11,7 +11,7 @@ use onlyargs::OnlyArgs;
 use std::{
     fs::File,
     io::Write,
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::{Command, ExitCode},
     time::{Duration, Instant},
 };
@@ -34,6 +34,15 @@ pub fn install() -> Result<(), Error> {
         args.show_version_and_exit();
     }
 
+    let bakkesmod = match args.bakkesmod {
+        Some(path) => path,
+        None => {
+            let appdata = std::env::var("APPDATA")?;
+
+            PathBuf::from_iter([&appdata, "bakkesmod", "bakkesmod"])
+        }
+    };
+
     debug!("Running `cargo build`");
     let mut cmd = Command::new("cargo");
     cmd.arg("build");
@@ -47,16 +56,17 @@ pub fn install() -> Result<(), Error> {
     }
 
     eprintln!("Installing {}", args.package);
+
     let plugin_name = args.package.replace('-', "_");
-    install_plugin(&plugin_name, args.release)?;
+    install_plugin(&plugin_name, bakkesmod, args.release)?;
 
     eprintln!("Finished install in {:.2?}", time.elapsed());
 
     Ok(())
 }
 
-fn install_plugin(plugin_name: &str, release: bool) -> Result<(), Error> {
-    if let Ok(password) = get_rcon_password() {
+fn install_plugin(plugin_name: &str, bakkesmod: PathBuf, release: bool) -> Result<(), Error> {
+    if let Ok(password) = get_rcon_password(&bakkesmod) {
         debug!("Connecting to RCon.");
         if let Some(mut client) = rcon::RCon::new(&password)? {
             debug!("Rocket League is running. Using RCon to reload the plugin.");
@@ -65,7 +75,7 @@ fn install_plugin(plugin_name: &str, release: bool) -> Result<(), Error> {
             debug!("Waiting for bakkesmod to close the old plugin.");
             std::thread::sleep(Duration::from_secs(1));
 
-            copy_plugin(plugin_name, release)?;
+            copy_plugin(plugin_name, &bakkesmod, release)?;
             client.plugin_load(plugin_name)?;
 
             return Ok(());
@@ -74,45 +84,38 @@ fn install_plugin(plugin_name: &str, release: bool) -> Result<(), Error> {
         debug!("Timed out waiting for RCon.");
     }
 
-    copy_plugin(plugin_name, release)?;
-    deferred_enable_plugin(plugin_name)?;
+    copy_plugin(plugin_name, &bakkesmod, release)?;
+    deferred_enable_plugin(plugin_name, bakkesmod)?;
 
     Ok(())
 }
 
-fn copy_plugin(plugin_name: &str, release: bool) -> Result<(), Error> {
+fn copy_plugin(plugin_name: &str, bakkesmod: &Path, release: bool) -> Result<(), Error> {
     debug!("Copying the DLL to the plugin directory.");
 
-    let appdata = std::env::var("APPDATA")?;
     let release = if release { "release" } else { "debug" };
     let dll = format!("{}.dll", plugin_name);
     let src = PathBuf::from_iter(["target", release, &dll]);
-    let dest = PathBuf::from_iter([&appdata, "bakkesmod", "bakkesmod", "plugins", &dll]);
+    let dest = bakkesmod.join("plugins").join(dll);
     std::fs::copy(src, dest)?;
 
     Ok(())
 }
 
-fn deferred_enable_plugin(plugin_name: &str) -> Result<(), Error> {
+fn deferred_enable_plugin(plugin_name: &str, bakkesmod: PathBuf) -> Result<(), Error> {
     debug!("Deferring plugin install to next bakkesmod launch.");
-    let appdata = std::env::var("APPDATA")?;
-    let path = PathBuf::from_iter([
-        &appdata,
-        "bakkesmod",
-        "bakkesmod",
-        "data",
-        "newfeatures.apply",
-    ]);
+
+    let path = bakkesmod.join("data").join("newfeatures.apply");
     let mut f = File::options().create(true).append(true).open(path)?;
     f.write_all(format!("plugin load {} ; writeconfig\n", plugin_name).as_bytes())?;
 
     Ok(())
 }
 
-fn get_rcon_password() -> Result<String, Error> {
+fn get_rcon_password(bakkesmod: &Path) -> Result<String, Error> {
     debug!("Looking up RCon password.");
-    let appdata = std::env::var("APPDATA")?;
-    let path = PathBuf::from_iter([&appdata, "bakkesmod", "bakkesmod", "cfg", "config.cfg"]);
+
+    let path = bakkesmod.join("cfg").join("config.cfg");
     let config = std::fs::read_to_string(path)?;
 
     debug!("Parsing bakkesmod config.");

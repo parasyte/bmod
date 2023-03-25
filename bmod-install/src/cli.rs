@@ -1,11 +1,14 @@
 use onlyargs::{CliError, OnlyArgs};
-use std::ffi::OsString;
+use std::{ffi::OsString, path::PathBuf};
 
 /// CLI arguments.
 #[derive(Debug)]
 pub struct Args {
     /// The plugin's crate name. Must be relative to the CWD.
     pub package: String,
+
+    /// User's local bakkesmod directory.
+    pub bakkesmod: Option<PathBuf>,
 
     /// Build release profile (defaults to debug).
     pub release: bool,
@@ -31,7 +34,9 @@ impl OnlyArgs for Args {
             ".exe",
             " [flags] [options]\n",
             "\nFlags:\n",
-            "  -p --package <name>  The plugin's crate name. Must be relative to the CWD.\n",
+            "  -p --package <name>    The plugin's crate name. Must be relative to the CWD.\n",
+            "  -b --bakkesmod [path]  Path for local bakkesmod directory.\n",
+            "                         Default: `%AppData%\\bakkesmod\\bakkesmod`\n",
             "\nOptions:\n",
             "  -r --release  Build release profile (defaults to debug).\n",
             "  -h --help     Show this help message and exit.\n",
@@ -41,6 +46,7 @@ impl OnlyArgs for Args {
 
     fn parse(args: Vec<OsString>) -> Result<Args, CliError> {
         let mut package = None;
+        let mut bakkesmod = None;
         let mut release = false;
         let mut help = false;
         let mut version = false;
@@ -60,6 +66,9 @@ impl OnlyArgs for Args {
                         .map_err(|err| CliError::ParseStrError("release".to_string(), err))?;
 
                     package = Some(name);
+                }
+                Some("--bakkesmod") | Some("-b") => {
+                    bakkesmod = Some(it.next().ok_or_else(|| missing(s))?.into());
                 }
                 Some("--release") | Some("-r") => {
                     release = true;
@@ -82,6 +91,7 @@ impl OnlyArgs for Args {
 
         Ok(Self {
             package,
+            bakkesmod,
             release,
             help,
             version,
