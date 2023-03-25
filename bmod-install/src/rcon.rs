@@ -7,9 +7,8 @@ use std::{
 use ws_tool::{
     codec::StringCodec,
     connector::{get_host, get_scheme},
-    frame::OpCode,
     http::Uri,
-    ClientBuilder, Message,
+    ClientBuilder,
 };
 
 /// Remote Console client for bakkesmod.
@@ -54,19 +53,6 @@ impl RCon {
         self.client.send(cmd)?;
 
         Ok(())
-    }
-}
-
-impl Drop for RCon {
-    fn drop(&mut self) {
-        debug!("Closing WebSocket connection.");
-
-        // Ignore errors.
-        let _ = self
-            .client
-            .send(Message::from((OpCode::Close, String::new())));
-
-        let _ = self.client.receive();
     }
 }
 
