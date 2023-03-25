@@ -6,6 +6,9 @@ edition = "2021"
 publish = false
 
 [dependencies]
+env_logger = "0.10"
 error-iter = "0.4"
+log = "0.4"
 onlyargs = { git = "https://github.com/parasyte/onlyargs.git", rev = "7d99788b71d93a83e066404710e2c815f84dbd0a" }
 thiserror = "1"
+ws-tool = "0.7"

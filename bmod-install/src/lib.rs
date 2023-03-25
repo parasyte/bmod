@@ -4,54 +4,37 @@
 //! installed with `cargo install`.
 
 pub use crate::cli::Args;
+pub use crate::error::Error;
 use error_iter::ErrorIter as _;
+use log::{debug, trace};
 use onlyargs::OnlyArgs;
 use std::{
-    env::VarError,
     fs::File,
     io::Write,
     path::PathBuf,
     process::{Command, ExitCode},
+    time::{Duration, Instant},
 };
-use thiserror::Error;
 
 mod cli;
-
-/// All the ways in which installing a plugin can fail.
-#[derive(Debug, Error)]
-pub enum Error {
-    /// Argument parsing errors.
-    #[error("Argument parsing error")]
-    Cli(#[from] onlyargs::CliError),
-
-    /// File system I/O errors.
-    #[error("I/O error")]
-    Io(#[from] std::io::Error),
-
-    /// Cargo build errors.
-    #[error("Cargo build failed with status code: {0:?}")]
-    Build(Option<i32>),
-
-    /// A required environment variable is missing.
-    #[error("Missing APPDATA env var")]
-    MissingEnv(#[from] VarError),
-}
+mod error;
+mod rcon;
 
 /// The main installer.
 ///
 /// Use this in your executable if you want to customize how errors are reported.
 pub fn install() -> Result<(), Error> {
-    let appdata = std::env::var("APPDATA")?;
+    let time = Instant::now();
     let args: Args = onlyargs::parse()?;
 
-    // Handle `--help` and `--version` options.
+    trace!("Got args: {args:#?}");
     if args.help {
         args.show_help_and_exit();
     } else if args.version {
         args.show_version_and_exit();
     }
 
-    // Run `cargo build`.
+    debug!("Running `cargo build`");
     let mut cmd = Command::new("cargo");
     cmd.arg("build");
     if args.release {
@@ -63,15 +46,56 @@ pub fn install() -> Result<(), Error> {
         return Err(Error::Build(status.code()));
     }
 
-    // Copy the DLL to the plugin directory.
-    let release = if args.release { "release" } else { "debug" };
+    eprintln!("Installing {}", args.package);
     let plugin_name = args.package.replace('-', "_");
+    install_plugin(&plugin_name, args.release)?;
+
+    eprintln!("Finished install in {:.2?}", time.elapsed());
+
+    Ok(())
+}
+
+fn install_plugin(plugin_name: &str, release: bool) -> Result<(), Error> {
+    if let Ok(password) = get_rcon_password() {
+        debug!("Connecting to RCon.");
+        if let Some(mut client) = rcon::RCon::new(&password)? {
+            debug!("Rocket League is running. Using RCon to reload the plugin.");
+            client.plugin_unload(plugin_name)?;
+
+            debug!("Waiting for bakkesmod to close the old plugin.");
+            std::thread::sleep(Duration::from_secs(1));
+
+            copy_plugin(plugin_name, release)?;
+            client.plugin_load(plugin_name)?;
+
+            return Ok(());
+        }
+
+        debug!("Timed out waiting for RCon.");
+    }
+
+    copy_plugin(plugin_name, release)?;
+    deferred_enable_plugin(plugin_name)?;
+
+    Ok(())
+}
+
+fn copy_plugin(plugin_name: &str, release: bool) -> Result<(), Error> {
+    debug!("Copying the DLL to the plugin directory.");
+
+    let appdata = std::env::var("APPDATA")?;
+    let release = if release { "release" } else { "debug" };
     let dll = format!("{}.dll", plugin_name);
     let src = PathBuf::from_iter(["target", release, &dll]);
     let dest = PathBuf::from_iter([&appdata, "bakkesmod", "bakkesmod", "plugins", &dll]);
     std::fs::copy(src, dest)?;
 
-    // Auto-enable the plugin.
+    Ok(())
+}
+
+fn deferred_enable_plugin(plugin_name: &str) -> Result<(), Error> {
+    debug!("Deferring plugin install to next bakkesmod launch.");
+    let appdata = std::env::var("APPDATA")?;
     let path = PathBuf::from_iter([
         &appdata,
         "bakkesmod",
@@ -85,11 +109,34 @@ pub fn install() -> Result<(), Error> {
     Ok(())
 }
 
+fn get_rcon_password() -> Result<String, Error> {
+    debug!("Looking up RCon password.");
+    let appdata = std::env::var("APPDATA")?;
+    let path = PathBuf::from_iter([&appdata, "bakkesmod", "bakkesmod", "cfg", "config.cfg"]);
+    let config = std::fs::read_to_string(path)?;
+
+    debug!("Parsing bakkesmod config.");
+    for line in config.lines() {
+        if let Some(line) = line.strip_prefix("rcon_password ") {
+            let password = line
+                .split('"')
+                .nth(1)
+                .map_or_else(String::new, |s| s.to_string());
+
+            return Ok(password);
+        }
+    }
+
+    Ok(String::new())
+}
+
 /// A wrapper for [`run`].
 ///
 /// Intended to be used as a simple `main` function. This prints the CLI help text and the chain of
 /// error messages. If you wish to customize error handling, use [`run`] instead.
 pub fn run() -> ExitCode {
+    env_logger::init();
+
     match install() {
         Ok(_) => ExitCode::SUCCESS,
         Err(err) => {
@@ -97,7 +144,7 @@ pub fn run() -> ExitCode {
                 eprintln!("{}", Args::help());
             }
 
-            eprintln!("Build error: {err}");
+            eprintln!("Install error: {err}");
             for source in err.sources().skip(1) {
                 eprintln!("  Caused by: {source}");
             }
