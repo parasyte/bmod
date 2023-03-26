@@ -105,16 +105,14 @@ fn copy_plugin(plugin_name: &str, bakkesmod: &Path, release: bool) -> Result<(),
 fn deferred_enable_plugin(plugin_name: &str, bakkesmod: PathBuf) -> Result<(), Error> {
     let path = bakkesmod.join("data").join("newfeatures.apply");
     let cmd = format!("plugin load {} ; writeconfig ;\n", plugin_name);
-    let trimmed = cmd.trim();
 
     debug!("Checking for preexisting `plugin load` commands.");
 
     if let Ok(content) = std::fs::read_to_string(&path) {
-        for line in content.lines() {
-            if line == trimmed {
-                debug!("Found preexisting `plugin load` command.");
-                return Ok(());
-            }
+        let trimmed = cmd.trim();
+        if content.lines().any(|line| line == trimmed) {
+            debug!("Found preexisting `plugin load` command.");
+            return Ok(());
         }
     }
 
