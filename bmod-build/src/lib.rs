@@ -26,6 +26,10 @@ pub fn compile(crate_name: &str, crate_version: &str, class_name: &str, flags: P
     assert_ne!(crate_name, "");
     assert_ne!(crate_version, "");
     assert_ne!(class_name, "");
+    assert!(!class_name.chars().next().unwrap().is_ascii_digit());
+    assert!(class_name
+        .chars()
+        .all(|ch| ch.is_ascii_alphanumeric() || ch == '_'));
 
     let out_dir = std::env::var("OUT_DIR").unwrap();
     let bridge_path = PathBuf::from_iter([&out_dir, "plugin.rs"]);
