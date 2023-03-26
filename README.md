@@ -55,6 +55,8 @@ Caused by:
 C:/Users/jay/.cargo/bin/cargo.exe: error while loading shared libraries: ?: cannot open shared object file: No such file or directory
 ```
 
+The build-script for `test-plugin` adds this path automatically, but it is easy to forget.
+
 
 ## TODO
 
