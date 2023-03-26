@@ -52,7 +52,7 @@ pub fn compile(crate_name: &str, crate_version: &str, class_name: &str, flags: P
             }
 
             unsafe extern "C++" {
-                fn console_log(msg: &str);
+                fn console_log(msg: &CxxString);
             }
         }
     };

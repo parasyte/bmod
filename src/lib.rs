@@ -57,13 +57,13 @@ macro_rules! plugin {
 }
 
 /// Log a formatted string to the BakkesMod F6 console.
-///
-/// If you don't need formatting and just want to print an existing string reference, consider using
-/// the `crate::ffi::console_log()` function instead. Doing so will avoid an unnecessary allocation.
 #[macro_export]
 #[allow(clippy::crate_in_macro_def)]
 macro_rules! console_log {
     ($($args:tt)*) => {
-        crate::ffi::console_log(&format!($($args)*));
+        cxx::let_cxx_string!(msg = "");
+        std::fmt::Write::write_fmt(&mut msg.as_mut(), format_args!($($args),*)).unwrap();
+
+        crate::ffi::console_log(&msg);
     }
 }

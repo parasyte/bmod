@@ -12,6 +12,6 @@ void {class_name}::onUnload() {{
     on_unload();
 }}
 
-void console_log(rust::Str msg) {{
-    singleton->cvarManager->log(std::string(msg));
+void console_log(std::string const &msg) {{
+    singleton->cvarManager->log(msg);
 }}

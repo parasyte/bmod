@@ -7,6 +7,6 @@ bmod::plugin! {
     }
 
     fn on_unload() {
-        crate::ffi::console_log("Goodbye!");
+        console_log!("Goodbye!");
     }
 }
