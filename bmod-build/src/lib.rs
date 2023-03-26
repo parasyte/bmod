@@ -111,4 +111,9 @@ pub fn compile(crate_name: &str, crate_version: &str, class_name: &str, flags: P
     println!("cargo:rustc-link-search={}", bakkesmod_lib_path.display());
     println!("cargo:rustc-link-lib=pluginsdk");
     println!("cargo:rustc-link-arg=/WHOLEARCHIVE:{crate_name}.lib");
+
+    // Set PATH environment variable to allow `cargo test` to work.
+    let appdata = std::env::var("APPDATA").unwrap();
+    let path = std::env::var("PATH").unwrap();
+    println!("cargo:rustc-env=PATH={appdata}/bakkesmod/bakkesmod/dll;{path}");
 }

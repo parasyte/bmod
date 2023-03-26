@@ -18,7 +18,7 @@ Still interested? The TL;DR quick-start is:
 $ cargo bmod-install --release --package test-plugin
 ```
 
-This will build (in release mode) the [`test-plugin`](./examples/test-plugin/src/main.rs) crate and attempt to install it to the default plugin directory. It also arranges for bakkesmod to load and enable the plugin, which will take effect when Rocket League is restarted.
+This will build (in release mode) the [`test-plugin`](./examples/test-plugin/src/main.rs) crate and attempt to install it to the default plugin directory. It also arranges for bakkesmod to load and enable the plugin.
 
 The test plugin only prints a short message to the F6 console when loaded, and another message when unloaded.
 
@@ -55,7 +55,7 @@ Caused by:
 C:/Users/jay/.cargo/bin/cargo.exe: error while loading shared libraries: ?: cannot open shared object file: No such file or directory
 ```
 
-The build-script for `test-plugin` adds this path automatically, but it is easy to forget.
+`bmod_build::compile()` adds this path automatically, but you may need to set it to something different if you have bakkesmod installed to a nonstandard location.
 
 
 ## TODO
