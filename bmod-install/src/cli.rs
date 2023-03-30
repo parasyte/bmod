@@ -21,28 +21,26 @@ pub struct Args {
 }
 
 impl OnlyArgs for Args {
-    fn help() -> &'static str {
-        concat!(
-            env!("CARGO_PKG_NAME"),
-            " v",
-            env!("CARGO_PKG_VERSION"),
-            "\n",
-            env!("CARGO_PKG_DESCRIPTION"),
-            "\n",
-            "\nUsage:\n  ",
-            env!("CARGO_PKG_NAME"),
-            ".exe",
-            " [flags] [options]\n",
-            "\nFlags:\n",
-            "  -p --package <name>    The plugin's crate name. Must be relative to the CWD.\n",
-            "  -b --bakkesmod [path]  Path for local bakkesmod directory.\n",
-            "                         Default: `%AppData%\\bakkesmod\\bakkesmod`\n",
-            "\nOptions:\n",
-            "  -r --release  Build release profile (defaults to debug).\n",
-            "  -h --help     Show this help message and exit.\n",
-            "  --version     Show the application version and exit.\n",
-        )
-    }
+    const HELP: &'static str = concat!(
+        env!("CARGO_PKG_NAME"),
+        " v",
+        env!("CARGO_PKG_VERSION"),
+        "\n",
+        env!("CARGO_PKG_DESCRIPTION"),
+        "\n",
+        "\nUsage:\n  ",
+        env!("CARGO_PKG_NAME"),
+        ".exe",
+        " [flags] [options]\n",
+        "\nFlags:\n",
+        "  -p --package <name>    The plugin's crate name. Must be relative to the CWD.\n",
+        "  -b --bakkesmod [path]  Path for local bakkesmod directory.\n",
+        "                         Default: `%AppData%\\bakkesmod\\bakkesmod`\n",
+        "\nOptions:\n",
+        "  -r --release  Build release profile (defaults to debug).\n",
+        "  -h --help     Show this help message and exit.\n",
+        "  -V --version  Show the application version and exit.\n",
+    );
 
     fn parse(args: Vec<OsString>) -> Result<Args, CliError> {
         let mut package = None;
@@ -76,7 +74,7 @@ impl OnlyArgs for Args {
                 Some("--help") | Some("-h") => {
                     help = true;
                 }
-                Some("--version") => {
+                Some("--version") | Some("-V") => {
                     version = true;
                 }
                 _ => return Err(onlyargs::CliError::Unknown(s)),

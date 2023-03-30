@@ -156,7 +156,7 @@ pub fn run() -> ExitCode {
         Ok(_) => ExitCode::SUCCESS,
         Err(err) => {
             if matches!(err, Error::Cli(_)) {
-                eprintln!("{}", Args::help());
+                eprintln!("{}", Args::HELP);
             }
 
             eprintln!("Install error: {err}");
