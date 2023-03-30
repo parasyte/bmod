@@ -33,13 +33,13 @@ impl OnlyArgs for Args {
         ".exe",
         " [flags] [options]\n",
         "\nFlags:\n",
-        "  -p --package <name>    The plugin's crate name. Must be relative to the CWD.\n",
-        "  -b --bakkesmod [path]  Path for local bakkesmod directory.\n",
-        "                         Default: `%AppData%\\bakkesmod\\bakkesmod`\n",
-        "\nOptions:\n",
         "  -r --release  Build release profile (defaults to debug).\n",
         "  -h --help     Show this help message and exit.\n",
         "  -V --version  Show the application version and exit.\n",
+        "                         Default: `%AppData%\\bakkesmod\\bakkesmod`\n",
+        "\nOptions:\n",
+        "  -p --package <name>    The plugin's crate name. Must be relative to the CWD.\n",
+        "  -b --bakkesmod [path]  Path for local bakkesmod directory.\n",
     );
 
     fn parse(args: Vec<OsString>) -> Result<Args, CliError> {
@@ -49,24 +49,14 @@ impl OnlyArgs for Args {
         let mut help = false;
         let mut version = false;
 
-        fn missing(s: OsString) -> CliError {
-            CliError::MissingValue(s.into_string().unwrap())
-        }
-
         let mut it = args.into_iter();
-        while let Some(s) = it.next() {
-            match s.to_str() {
-                Some("--package") | Some("-p") => {
-                    let name = it
-                        .next()
-                        .ok_or_else(|| missing(s))?
-                        .into_string()
-                        .map_err(|err| CliError::ParseStrError("release".to_string(), err))?;
-
-                    package = Some(name);
+        while let Some(arg) = it.next() {
+            match arg.to_str() {
+                Some(name @ "--package") | Some(name @ "-p") => {
+                    package = Some(onlyargs::parse_str(name, it.next())?);
                 }
-                Some("--bakkesmod") | Some("-b") => {
-                    bakkesmod = Some(it.next().ok_or_else(|| missing(s))?.into());
+                Some(name @ "--bakkesmod") | Some(name @ "-b") => {
+                    bakkesmod = Some(onlyargs::parse_path(name, it.next())?);
                 }
                 Some("--release") | Some("-r") => {
                     release = true;
@@ -77,15 +67,12 @@ impl OnlyArgs for Args {
                 Some("--version") | Some("-V") => {
                     version = true;
                 }
-                _ => return Err(onlyargs::CliError::Unknown(s)),
+                _ => return Err(onlyargs::CliError::Unknown(arg)),
             }
         }
 
         // Required arguments are set to defaults if `--help` or `--version` are present.
-        let package = (help || version)
-            .then(String::new)
-            .or(package)
-            .ok_or_else(|| CliError::MissingRequired("package".to_string()))?;
+        let package = onlyargs::unwrap_required(help || version, "--package", package)?;
 
         Ok(Self {
             package,
