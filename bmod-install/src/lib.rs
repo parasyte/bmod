@@ -7,7 +7,7 @@ pub use crate::cli::Args;
 pub use crate::error::Error;
 use error_iter::ErrorIter as _;
 use log::{debug, trace};
-use onlyargs::OnlyArgs;
+use onlyargs::OnlyArgs as _;
 use std::{
     fs::File,
     io::Write,
@@ -28,12 +28,6 @@ pub fn install() -> Result<(), Error> {
     let args: Args = onlyargs::parse()?;
 
     trace!("Got args: {args:#?}");
-    if args.help {
-        args.help();
-    } else if args.version {
-        args.version();
-    }
-
     let bakkesmod = match args.bakkesmod {
         Some(path) => path,
         None => {
