@@ -29,9 +29,9 @@ pub fn install() -> Result<(), Error> {
 
     trace!("Got args: {args:#?}");
     if args.help {
-        args.show_help_and_exit();
+        args.help();
     } else if args.version {
-        args.show_version_and_exit();
+        args.version();
     }
 
     let bakkesmod = match args.bakkesmod {

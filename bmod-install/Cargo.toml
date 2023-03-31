@@ -9,6 +9,6 @@ publish = false
 env_logger = "0.10"
 error-iter = "0.4"
 log = "0.4"
-onlyargs = { git = "https://github.com/parasyte/onlyargs.git", rev = "1bd04fceeecba9ce4716cf5cc39821966ea8ec1d" }
+onlyargs = { git = "https://github.com/parasyte/onlyargs.git", rev = "97cb6c34cd3a558d83ab41e2e19876707aea22b3" }
 thiserror = "1"
 ws-tool = "0.7"
