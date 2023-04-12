@@ -64,7 +64,8 @@ dependencies = [
  "error-iter",
  "log",
  "onlyargs",
- "thiserror",
+ "onlyargs_derive",
+ "onlyerror",
  "ws-tool",
 ]
 
@@ -328,6 +329,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
+name = "myn"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f950af707b8005ae33bb0f0b20cb32b09750e7375085606dc45b2f2078a34e52"
+
+[[package]]
 name = "once_cell"
 version = "1.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -336,7 +343,27 @@ checksum = "b7e5500299e16ebb147ae15a00a942af264cf3688f47923b8fc2cd5858f23ad3"
 [[package]]
 name = "onlyargs"
 version = "0.1.0"
-source = "git+https://github.com/parasyte/onlyargs.git?rev=542dd2659a90e3f3b6ec6a24549938da39664f38#542dd2659a90e3f3b6ec6a24549938da39664f38"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ab4085dbe21399f46b1bedc9e41e3563aa9f2ef8cf6db026dcfec9e8bdb6f12"
+
+[[package]]
+name = "onlyargs_derive"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2a5458a08b1f8645e3168b0ced9e530c765c578bf0aa635ba5d39030aadcef57"
+dependencies = [
+ "myn",
+ "onlyargs",
+]
+
+[[package]]
+name = "onlyerror"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3de62063c9f7ef82b259f3530af425d0b8bba375c7f790087616d8a613b5f8bc"
+dependencies = [
+ "myn",
+]
 
 [[package]]
 name = "pin-project-lite"

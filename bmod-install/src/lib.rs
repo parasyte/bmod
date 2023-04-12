@@ -3,7 +3,7 @@
 //! This is usually executed as a Cargo alias defined in the plugin repo, but it can also be
 //! installed with `cargo install`.
 
-pub use crate::cli::Args;
+use crate::cli::Args;
 pub use crate::error::Error;
 use error_iter::ErrorIter as _;
 use log::{debug, trace};
